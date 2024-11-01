@@ -1,0 +1,32 @@
+-- create the Empdb database
+create database Empdb;
+use Empdb;
+-- Create the Manager table
+CREATE TABLE Manager (
+    manager_id INT PRIMARY KEY,
+    manager_name VARCHAR(50) NOT NULL
+);
+
+-- Create the Employee table
+CREATE TABLE Employee (
+    empid INT PRIMARY KEY,
+    first_name VARCHAR(50) NOT NULL,
+    last_name VARCHAR(50) NOT NULL,
+    mangr_id INT,
+    FOREIGN KEY (mangr_id) REFERENCES Manager(manager_id) ON DELETE SET NULL
+);
+
+-- Insert data into Manager table
+INSERT INTO Manager (manager_id, manager_name)
+VALUES 
+(1, 'Joe'),
+(2, 'Akshay');
+
+-- Insert data into Employee table and assign managers
+INSERT INTO Employee (empid, first_name, last_name, mangr_id)
+VALUES 
+(101, 'Sarthak', 'Gupta', 1),
+(102, 'Ankit', 'Singh', 1),
+(103, 'Shubham', 'Verma', 2),
+(104, 'Yatharth', 'Sharma', 2),
+(105, 'Shivam', 'Kumar', 1);
