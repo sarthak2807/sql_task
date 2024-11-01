@@ -1,32 +1,90 @@
--- create the Empdb database
-create database Empdb;
-use Empdb;
--- Create the Manager table
+-- Create a new database named Empdb
+CREATE DATABASE Empdb;
+
+-- Switch to the newly created Empdb database
+USE Empdb;
+
+-- Create the Manager table to store manager information
 CREATE TABLE Manager (
-    manager_id INT PRIMARY KEY,
-    manager_name VARCHAR(50) NOT NULL
+    manager_id INT PRIMARY KEY,           -- Unique identifier for each manager
+    manager_name VARCHAR(50) NOT NULL     -- Name of the manager
 );
 
--- Create the Employee table
+-- Create the Employee table to store employee information
 CREATE TABLE Employee (
-    empid INT PRIMARY KEY,
-    first_name VARCHAR(50) NOT NULL,
-    last_name VARCHAR(50) NOT NULL,
-    mangr_id INT,
-    FOREIGN KEY (mangr_id) REFERENCES Manager(manager_id) ON DELETE SET NULL
+    empid INT PRIMARY KEY,                -- Unique identifier for each employee
+    first_name VARCHAR(50) NOT NULL,      -- Employee's first name
+    last_name VARCHAR(50) NOT NULL,       -- Employee's last name
+    mangr_id INT,                         -- Foreign key referencing the Manager table
+    FOREIGN KEY (mangr_id) REFERENCES Manager(manager_id) ON DELETE SET NULL -- Relation to Manager
 );
 
--- Insert data into Manager table
+-- Insert data into the Manager table
 INSERT INTO Manager (manager_id, manager_name)
 VALUES 
-(1, 'Joe'),
-(2, 'Akshay');
+(1, 'Joe'),      -- Manager with ID 1
+(2, 'Akshay');   -- Manager with ID 2
 
--- Insert data into Employee table and assign managers
+-- Insert data into the Employee table and assign managers
 INSERT INTO Employee (empid, first_name, last_name, mangr_id)
 VALUES 
-(101, 'Sarthak', 'Gupta', 1),
-(102, 'Ankit', 'Singh', 1),
-(103, 'Shubham', 'Verma', 2),
-(104, 'Yatharth', 'Sharma', 2),
-(105, 'Shivam', 'Kumar', 1);
+(101, 'Sarthak', 'Gupta', 1),   -- Employee 101 under manager Joe
+(102, 'Ankit', 'Singh', 1),      -- Employee 102 under manager Joe
+(103, 'Shubham', 'Verma', 2),     -- Employee 103 under manager Akshay
+(104, 'Yatharth', 'Sharma', 2),   -- Employee 104 under manager Akshay
+(105, 'Shivam', 'Kumar', 1);      -- Employee 105 under manager Joe
+
+-- Insert an employee who does not have a manager
+INSERT INTO Employee (empid, first_name, last_name, mangr_id)
+VALUES 
+(106, 'Ravi', 'Patel', NULL);     -- Employee 106 with no assigned manager
+
+-- 1. Query to get all employees under each manager
+SELECT 
+    m.manager_id,            -- Select the manager's ID
+    m.manager_name,          -- Select the manager's name
+    e.empid,                 -- Select the employee's ID
+    e.first_name,            -- Select the employee's first name
+    e.last_name              -- Select the employee's last name
+FROM 
+    Manager m                -- Alias for the Manager table
+LEFT JOIN 
+    Employee e               -- Alias for the Employee table
+ON 
+    m.manager_id = e.mangr_id -- Join condition on manager ID
+ORDER BY 
+    m.manager_id;           -- Order by manager ID
+
+
+-- 2. Query to count how many employees are under the manager named 'Joe'
+SELECT COUNT(e.empid) AS employee_count
+FROM Employee e
+JOIN Manager m ON e.mangr_id = m.manager_id -- Join Employee and Manager tables
+WHERE m.manager_name = 'Joe';  -- Filter for manager named Joe
+
+-- 3. Query to get all details of managers
+SELECT manager_id, manager_name
+FROM Manager;
+
+-- 4. Query to find any employees who are not assigned a manager
+SELECT *
+FROM Employee
+WHERE mangr_id IS NULL;  -- Employees with a NULL manager ID
+
+-- Change delimiter to allow creating a function
+DELIMITER $$
+
+-- 5. Create a function to concatenate first name and last name into full name
+CREATE FUNCTION get_full_name(emp_first_name VARCHAR(50), emp_last_name VARCHAR(50))
+RETURNS VARCHAR(100) DETERMINISTIC
+BEGIN
+    -- Return the concatenated full name
+    RETURN CONCAT(emp_first_name, ' ', emp_last_name);
+END$$
+
+-- Change delimiter back to the default
+DELIMITER ;
+
+-- Query to get full names of all employees using the defined function
+SELECT get_full_name(first_name, last_name) AS full_name
+FROM Employee;
